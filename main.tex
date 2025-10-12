@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+
+% Version information will be inserted here
+\newcommand{\documentversion}{v1.0}
+\newcommand{\githash}{unknown}
+
+\title{My LaTeX Document \\ \small{\documentversion\ (\githash)}}
+\author{Shubham Sonare}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Version: \documentversion}
+\lhead{Git: \githash}
+\cfoot{Page \thepage}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This is a LaTeX document with automatic version control integration.
+
+\subsection{Features}
+\begin{itemize}
+    \item Automatic Git hash in document title
+    \item Version numbering
+    \item Compiled both in Overleaf and locally
+    \item Synchronized with GitHub
+\end{itemize}
+
+\section{Content}
+This document demonstrates the integration of:
+\begin{enumerate}
+    \item Overleaf web editor
+    \item GitHub version control
+    \item Local command-line compilation
+    \item Automated versioning
+\end{enumerate}
+
+\section{Conclusion}
+This setup provides a complete LaTeX workflow with version control.
+
+\end{document}
