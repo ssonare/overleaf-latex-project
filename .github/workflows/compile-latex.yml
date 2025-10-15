@@ -13,7 +13,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
@@ -33,10 +33,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-latex-recommended
       
+      - name: Check for VERSION_PLACEHOLDER
+        run: |
+          if grep -q "VERSION_PLACEHOLDER" main.tex; then
+            echo "VERSION_PLACEHOLDER found in main.tex"
+          else
+            echo "VERSION_PLACEHOLDER not found, will add version as comment"
+          fi
+      
       - name: Prepare LaTeX document with version
         run: |
           cp main.tex main_versioned.tex
-          sed -i "s/VERSION_PLACEHOLDER/Version: ${{ steps.version.outputs.short_hash }} (${{ steps.version.outputs.date }})/g" main_versioned.tex
+          if grep -q "VERSION_PLACEHOLDER" main_versioned.tex; then
+            sed -i "s/VERSION_PLACEHOLDER/Version: ${{ steps.version.outputs.short_hash }} (${{ steps.version.outputs.date }})/g" main_versioned.tex
+          else
+            sed -i "1s/^/% Git Version: ${{ steps.version.outputs.short_hash }} (${{ steps.version.outputs.date }})\n/" main_versioned.tex
+          fi
       
       - name: Compile LaTeX document (first pass)
         run: |
@@ -46,30 +58,36 @@ jobs:
         run: |
           pdflatex -interaction=nonstopmode main_versioned.tex || true
       
-      - name: Rename PDF
+      - name: Check PDF was created
         run: |
           if [ -f main_versioned.pdf ]; then
-            mv main_versioned.pdf main.pdf
             echo "PDF generated successfully"
+            ls -lh main_versioned.pdf
+            mv main_versioned.pdf main.pdf
           else
             echo "PDF generation failed"
+            if [ -f main_versioned.log ]; then
+              echo "Last 30 lines of LaTeX log:"
+              tail -30 main_versioned.log
+            fi
             exit 1
           fi
       
       - name: Create changelog
         run: |
-          echo "# Build Information" > BUILD_INFO.txt
+          echo "Build Information" > BUILD_INFO.txt
+          echo "=================" >> BUILD_INFO.txt
           echo "" >> BUILD_INFO.txt
           echo "Build Date: $(date)" >> BUILD_INFO.txt
           echo "Commit Hash: ${{ steps.version.outputs.short_hash }}" >> BUILD_INFO.txt
           echo "Full Hash: ${{ steps.version.outputs.long_hash }}" >> BUILD_INFO.txt
           echo "Commit Date: ${{ steps.version.outputs.date }}" >> BUILD_INFO.txt
           echo "" >> BUILD_INFO.txt
-          echo "Last Commit Message:" >> BUILD_INFO.txt
-          git log -1 --pretty=format:"%s" >> BUILD_INFO.txt
+          echo "Last Commit:" >> BUILD_INFO.txt
+          git log -1 --pretty=format:"Author: %an%nMessage: %s" >> BUILD_INFO.txt
       
       - name: Upload PDF artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: compiled-pdf-${{ steps.version.outputs.short_hash }}
           path: |
@@ -82,7 +100,7 @@ jobs:
           zip compiled-latex-${{ steps.version.outputs.short_hash }}.zip main.pdf BUILD_INFO.txt
       
       - name: Upload ZIP artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: compiled-latex-zip-${{ steps.version.outputs.short_hash }}
           path: compiled-latex-${{ steps.version.outputs.short_hash }}.zip
