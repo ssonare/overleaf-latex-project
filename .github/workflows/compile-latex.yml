@@ -1,0 +1,89 @@
+name: Compile LaTeX Document
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Get Git version info
+        id: version
+        run: |
+          GIT_HASH=$(git rev-parse --short HEAD)
+          GIT_DATE=$(git log -1 --format=%cd --date=short)
+          GIT_LONG_HASH=$(git rev-parse HEAD)
+          echo "short_hash=$GIT_HASH" >> $GITHUB_OUTPUT
+          echo "date=$GIT_DATE" >> $GITHUB_OUTPUT
+          echo "long_hash=$GIT_LONG_HASH" >> $GITHUB_OUTPUT
+          echo "Version: $GIT_HASH ($GIT_DATE)"
+      
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-latex-recommended
+      
+      - name: Prepare LaTeX document with version
+        run: |
+          cp main.tex main_versioned.tex
+          sed -i "s/VERSION_PLACEHOLDER/Version: ${{ steps.version.outputs.short_hash }} (${{ steps.version.outputs.date }})/g" main_versioned.tex
+      
+      - name: Compile LaTeX document (first pass)
+        run: |
+          pdflatex -interaction=nonstopmode main_versioned.tex || true
+      
+      - name: Compile LaTeX document (second pass)
+        run: |
+          pdflatex -interaction=nonstopmode main_versioned.tex || true
+      
+      - name: Rename PDF
+        run: |
+          if [ -f main_versioned.pdf ]; then
+            mv main_versioned.pdf main.pdf
+            echo "PDF generated successfully"
+          else
+            echo "PDF generation failed"
+            exit 1
+          fi
+      
+      - name: Create changelog
+        run: |
+          echo "# Build Information" > BUILD_INFO.txt
+          echo "" >> BUILD_INFO.txt
+          echo "Build Date: $(date)" >> BUILD_INFO.txt
+          echo "Commit Hash: ${{ steps.version.outputs.short_hash }}" >> BUILD_INFO.txt
+          echo "Full Hash: ${{ steps.version.outputs.long_hash }}" >> BUILD_INFO.txt
+          echo "Commit Date: ${{ steps.version.outputs.date }}" >> BUILD_INFO.txt
+          echo "" >> BUILD_INFO.txt
+          echo "Last Commit Message:" >> BUILD_INFO.txt
+          git log -1 --pretty=format:"%s" >> BUILD_INFO.txt
+      
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-pdf-${{ steps.version.outputs.short_hash }}
+          path: |
+            main.pdf
+            BUILD_INFO.txt
+          retention-days: 90
+      
+      - name: Create ZIP archive
+        run: |
+          zip compiled-latex-${{ steps.version.outputs.short_hash }}.zip main.pdf BUILD_INFO.txt
+      
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-latex-zip-${{ steps.version.outputs.short_hash }}
+          path: compiled-latex-${{ steps.version.outputs.short_hash }}.zip
+          retention-days: 90
