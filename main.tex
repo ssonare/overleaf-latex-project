@@ -42,5 +42,36 @@ This document demonstrates the integration of:
 
 \section{Conclusion}
 This setup provides a complete LaTeX workflow with version control.
+\section{GitHub Actions Automatic Compilation Test}
+
+This section demonstrates that GitHub Actions automatically compiles this document on every push.
+
+\subsection{How It Works}
+
+Every time code is pushed to the main branch:
+\begin{enumerate}
+    \item GitHub Actions workflow is triggered automatically
+    \item A fresh Ubuntu runner is created
+    \item LaTeX packages are installed
+    \item The document is compiled twice (for references)
+    \item The PDF is saved as an artifact for 90 days
+    \item A ZIP archive is created with the PDF and build information
+\end{enumerate}
+
+\subsection{Version Control}
+
+The Git commit hash is embedded in the document, creating a traceable link between the PDF and the source code used to generate it.
+
+\subsection{Benefits}
+
+\begin{itemize}
+    \item No manual compilation needed
+    \item Consistent build environment
+    \item Automatic version tracking
+    \item Easy access to compiled PDFs
+    \item Complete build history
+\end{itemize}
+
+This automated workflow ensures that every version of the document is compiled and archived.
 
 \end{document}
