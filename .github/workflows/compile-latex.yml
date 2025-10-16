@@ -9,7 +9,7 @@ on:
 
 jobs:
   build_latex:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
       - name: Checkout repository
@@ -28,10 +28,10 @@ jobs:
           echo "long_hash=$GIT_LONG_HASH" >> $GITHUB_OUTPUT
           echo "Version: $GIT_HASH ($GIT_DATE)"
       
-      - name: Install LaTeX
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-latex-recommended
+      #- name: Install LaTeX
+      #  run: |
+       #   sudo apt-get update
+        #  sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-latex-recommended
       
       - name: Check for VERSION_PLACEHOLDER
         run: |
