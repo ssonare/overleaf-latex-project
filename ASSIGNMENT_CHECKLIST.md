@@ -129,5 +129,28 @@ Each successful build creates:
 ## Notes
 
 All required assignment tasks have been successfully completed. The GitHub Actions workflow automatically compiles LaTeX documents on every push, embeds Git version information, and saves PDF artifacts. The system is tested, documented, and fully operational.
+## Bonus Tasks (+20 Points) - ALL COMPLETE ✅
 
+### Task 5: Set up local runner ✅
+- [x] Runner installed at /opt/actions-runner
+- [x] Running as non-root user (runner)
+- [x] Installed as systemd service
+- [x] Active and visible in GitHub
+- [x] LaTeX pre-installed
+
+### Task 6: Use self-hosted runner ✅
+- [x] Workflow updated to self-hosted
+- [x] Removed LaTeX installation step
+- [x] Runs on local server
+- [x] Faster build times
+- [x] Zero Actions minutes used
+
+### Task 7: Docker image ✅
+- [x] Dockerfile created
+- [x] Image built: latex-github-runner:latest
+- [x] Tagged: ssonare/latex-github-runner:v1.0
+- [x] Size: ~2GB
+- [x] Includes runner + LaTeX
+
+**BONUS COMPLETE: +20 POINTS**
 **Status:** READY FOR SUBMISSION ✅
